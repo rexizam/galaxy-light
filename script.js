@@ -212,11 +212,11 @@ window.addEventListener("resize", () => {
 	sizes.height = window.innerHeight;
 
 	// Update camera
-	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.aspect = sizes.width / sizes.height;
 	camera.updateProjectionMatrix();
 
 	// Update renderer
-	renderer.setSize(window.innerWidth, window.innerHeight);
+	renderer.setSize(sizes.width, sizes.height);
 	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 });
 
