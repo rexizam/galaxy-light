@@ -22,8 +22,8 @@ const canvas = document.querySelector("canvas.webgl");
 const scene = new THREE.Scene();
 
 // Texture
-// const textureLoader= new THREE.TextureLoader();
-// const texture = textureLoader.load('/textures/particles/9.png') ;
+const textureLoader= new THREE.TextureLoader();
+const texture = textureLoader.load('/textures/particles-single.png');
 
 // Galaxy
 const parameters = {};
@@ -84,7 +84,6 @@ const generateGalaxy = () => {
 		positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * radius + randomZ;
 
 		//color
-
 		const mixedColor = insideColor.clone();
 		mixedColor.lerp(outsideColor, radius / parameters.radius);
 
@@ -94,15 +93,34 @@ const generateGalaxy = () => {
 	}
 
 	geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-
 	geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+
+	function createCircleTexture(color, size) {
+		var matCanvas = document.createElement('canvas');
+		matCanvas.width = matCanvas.height = size;
+		var matContext = matCanvas.getContext('2d');
+		// create texture object from canvas.
+		var texture = new THREE.Texture(matCanvas);
+		// Draw a circle
+		var center = size / 2;
+		matContext.beginPath();
+		matContext.arc(center, center, size/2, 0, 2 * Math.PI, false);
+		matContext.closePath();
+		matContext.fillStyle = color;
+		matContext.fill();
+		// need to set needsUpdate
+		texture.needsUpdate = true;
+		// return a texture made from the canvas
+		return texture;
+	}
 
 	// Materials
 	galaxyMaterial = new THREE.PointsMaterial({
 		size: parameters.size,
 		sizeAttenuation: true,
 		transparent: true,
-		// alphaMap : texture,
+		//map: texture,
+		alphaMap: createCircleTexture('#ffffff', 24),
 		depthWrite: false,
 		blending: THREE.AdditiveBlending,
 		vertexColors: true
