@@ -206,7 +206,7 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-window.addEventListener("resize", () => {
+function updateSizing() {
 	// Update sizes
 	sizes.width = window.innerWidth;
 	sizes.height = window.innerHeight;
@@ -218,6 +218,10 @@ window.addEventListener("resize", () => {
 	// Update renderer
 	renderer.setSize(sizes.width, sizes.height);
 	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+}
+
+window.addEventListener("resize", () => {
+	updateSizing();
 });
 
 // Controls
@@ -284,6 +288,7 @@ function init() {
 	createScene();
 	createLights();
 	plane();
+	updateSizing();
 	animate();
 }
 
