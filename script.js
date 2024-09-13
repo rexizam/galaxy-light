@@ -206,22 +206,18 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-function updateSizing() {
+window.addEventListener("resize", () => {
 	// Update sizes
 	sizes.width = window.innerWidth;
 	sizes.height = window.innerHeight;
 
 	// Update camera
-	camera.aspect = sizes.width / sizes.height;
+	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();
 
 	// Update renderer
-	renderer.setSize(sizes.width, sizes.height);
+	renderer.setSize(window.innerWidth, window.innerHeight);
 	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-}
-
-window.addEventListener("resize", () => {
-	updateSizing();
 });
 
 // Controls
@@ -288,7 +284,6 @@ function init() {
 	createScene();
 	createLights();
 	plane();
-	updateSizing();
 	animate();
 }
 
