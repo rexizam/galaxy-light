@@ -304,12 +304,6 @@ function plane() {
 	scene.add(plane);
 }
 
-function handleResize() {
-	camera.aspect = window.innerWidth / window.innerHeight;
-	camera.updateProjectionMatrix();
-	renderer.setSize(window.innerWidth, window.innerHeight);
-}
-
 function animate(delta) {
 	requestAnimationFrame(animate);
 	material.uniforms.time.value = delta * 0.6;
@@ -317,4 +311,3 @@ function animate(delta) {
 }
 
 init();
-window.addEventListener("resize", handleResize, false);
