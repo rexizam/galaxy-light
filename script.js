@@ -23,7 +23,7 @@ const scene = new THREE.Scene();
 
 // Texture
 const textureLoader= new THREE.TextureLoader();
-const texture = textureLoader.load('/textures/particles-single.png');
+const texture = textureLoader.load('https://catlikecoding.com/unity/tutorials/custom-srp/particles/unlit-particles/particles-single.png');
 
 // Galaxy
 const parameters = {};
