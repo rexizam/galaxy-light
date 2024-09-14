@@ -79,7 +79,7 @@ function start() {
 
 // Texture
 const textureLoader= new THREE.TextureLoader();
-const texture = textureLoader.load('/textures/particles-single.png');
+const texture = textureLoader.load('https://catlikecoding.com/unity/tutorials/custom-srp/particles/unlit-particles/particles-single.png');
 
 // Galaxy parameters
 const parameters = {};
@@ -192,8 +192,8 @@ const generateGalaxy = () => {
 
 /**----------------------------------------------------- PLANET -----------------------------------------------------**/
 
-const particleCount = 100000;
-const radius = 400;
+const particleCount = 60000;
+const radius = 220;
 const positionProps = ['x', 'y', 'z'];
 const colorProps = ['r', 'g', 'b'];
 const ageProps = ['age', 'life'];
