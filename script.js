@@ -1,31 +1,87 @@
 import * as THREE from "three";
+import { OrbitControls } from "https://unpkg.com/three@0.149.0/examples/jsm/controls/OrbitControls.js";
 
-import * as dat from "https://cdn.skypack.dev/dat.gui@0.7.9";
-import {OrbitControls} from "https://unpkg.com/three@0.149.0/examples/jsm/controls/OrbitControls.js";
+/* INIT */
 
-/** GALAXY **/
+/** Canvas **/
+const canvas = document.querySelector("canvas.galaxy");
 
-/**
- * Base
- */
-
-// Debug
-/*const gui = new dat.GUI({
- width: 350
-});
-gui.close();*/
-
-// Canvas
-const canvas = document.querySelector("canvas.webgl");
-
-// Scene
+/** Scene **/
 const scene = new THREE.Scene();
+
+/** Clock **/
+const clock = new THREE.Clock();
+
+/** Sizes **/
+const sizes = {
+	width: window.innerWidth,
+	height: window.innerHeight
+};
+
+/** Base camera **/
+const camera = new THREE.PerspectiveCamera(
+	50,
+	sizes.width / sizes.height,
+	1,
+	10000
+);
+camera.position.x = 0;
+camera.position.y = 0;
+camera.position.z = 2000;
+scene.add(camera);
+
+/** Renderer **/
+const renderer = new THREE.WebGLRenderer({
+	canvas: canvas
+});
+renderer.setSize(sizes.width, sizes.height);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+window.addEventListener("resize", () => {
+	// Update sizes
+	sizes.width = window.innerWidth;
+	sizes.height = window.innerHeight;
+
+	// Update camera
+	camera.aspect = sizes.width / sizes.height;
+	camera.updateProjectionMatrix();
+
+	// Update renderer
+	renderer.setSize(sizes.width, sizes.height);
+	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+});
+
+/** Controls **/
+var controls;
+controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+// controls.autoRotate = true;
+
+// Set the target for the controls
+controls.target.set(0, 0, 0); // Target point of the camera
+
+// Adjust the polar angle to tilt the camera downwards
+// The default polar angle is Math.PI / 2 (90 degrees), you can decrease it to look downwards
+controls.maxPolarAngle = 0; // Adjust this value to tilt the camera downwards
+controls.minPolarAngle = Math.PI / 2.5; // You can set this to 0 to avoid the camera flipping over
+
+addEventListener('DOMContentLoaded', start);
+
+function start() {
+	generateGalaxy();
+	createParticles();
+	createPoints();
+	createSphere();
+	animate();
+}
+
+/**----------------------------------------------------- GALAXY -----------------------------------------------------**/
 
 // Texture
 const textureLoader= new THREE.TextureLoader();
 const texture = textureLoader.load('/textures/particles-single.png');
 
-// Galaxy
+// Galaxy parameters
 const parameters = {};
 parameters.count = 365000;
 parameters.size = 0.025;
@@ -39,13 +95,13 @@ parameters.outerColor = "#070041";
 
 let geometry = null;
 let galaxyMaterial = null;
-let points = null;
+let galaxyPoints = null;
 
 const generateGalaxy = () => {
-	if (points !== null) {
+	if (galaxyPoints !== null) {
 		geometry.dispose();
 		galaxyMaterial.dispose();
-		scene.remove(points);
+		scene.remove(galaxyPoints);
 	}
 
 	geometry = new THREE.BufferGeometry();
@@ -127,124 +183,185 @@ const generateGalaxy = () => {
 	});
 
 	// Points
-	points = new THREE.Points(geometry, galaxyMaterial);
-	scene.add(points);
+	galaxyPoints = new THREE.Points(geometry, galaxyMaterial);
+	scene.add(galaxyPoints);
+
+	// Modify the scale to fit the planet
+	galaxyPoints.scale.set(125, 125, 125);
 };
 
-generateGalaxy();
+/**----------------------------------------------------- PLANET -----------------------------------------------------**/
 
-// console.log(sc)
-/*gui
- .add(parameters, "count", 1000, 500000, 1000)
- .name("Galaxy Count")
- .onFinishChange(generateGalaxy);
-gui
- .add(parameters, "size", 0.01, 0.1, 0.001)
- .name("Galaxy Size")
- .onFinishChange(generateGalaxy);
-gui
- .add(parameters, "radius", 1, 20, 1)
- .name("Galaxy Radius")
- .onFinishChange(generateGalaxy);
-gui
- .add(parameters, "branches", 3, 10, 1)
- .name("Galaxy Branches")
- .onFinishChange(generateGalaxy);
-gui
- .add(parameters, "spin", -5, 5, 1)
- .name("Galaxy Spin")
- .onFinishChange(generateGalaxy);
-gui
- .add(parameters, "randomness", 0, 10, 0.001)
- .name("Galaxy Randomness")
- .onFinishChange(generateGalaxy);
-gui
- .add(parameters, "randomnessPower", 0, 10, 0.001)
- .name("Galaxy Randomness Power")
- .onFinishChange(generateGalaxy);
-gui
- .addColor(parameters, "innerColor")
- .name("Galaxy Inside Color")
- .onFinishChange(generateGalaxy);
-gui
- .addColor(parameters, "outerColor")
- .name("Galaxy Outside Color")
- .onFinishChange(generateGalaxy);*/
+const particleCount = 100000;
+const radius = 400;
+const positionProps = ['x', 'y', 'z'];
+const colorProps = ['r', 'g', 'b'];
+const ageProps = ['age', 'life'];
 
-/**
- * Sizes
- */
+let sphereGeom;
+let sphereMat;
+let sphere;
+let pointsGeom;
+let pointsMat;
+let planetPoints;
+let positions;
+let colors;
+let ages;
 
-const sizes = {
-	width: window.innerWidth,
-	height: window.innerHeight
-};
+function createParticles() {
+	positions = new PropsArray(particleCount, positionProps);
+	colors = new PropsArray(particleCount, colorProps);
+	ages = new PropsArray(particleCount, ageProps);
 
-/**
- * Camera
- */
+	for (let i = 0; i < particleCount; i++) {
+		resetParticle(i);
+	}
+}
 
-// Base camera
-const camera = new THREE.PerspectiveCamera(
-	75,
-	sizes.width / sizes.height,
-	0.1,
-	1000
-);
-camera.position.x = 0;
-camera.position.y = 13;
-camera.position.z = 5;
-scene.add(camera);
+function resetParticle(i) {
+	positions.set(setPosition(), i * positions.spread);
+	colors.set(setColor(), i * colors.spread);
+	ages.set(setAge(), i * ages.spread);
+}
 
-/**
- * Renderer
- */
+function setPosition() {
+	let r, p, t, x, y, z;
 
-const renderer = new THREE.WebGLRenderer({
-	canvas: canvas
-});
-renderer.setSize(sizes.width, sizes.height);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+	r = radius + rand(10);
 
-window.addEventListener("resize", () => {
-	// Update sizes
-	sizes.width = window.innerWidth;
-	sizes.height = window.innerHeight;
+	t = rand(TAU);
+	z = randRange(1);
+	p = sqrt(1 - z * z);
+	x = r * p * cos(t);
+	y = r * p * sin(t);
 
-	// Update camera
-	camera.aspect = sizes.width / sizes.height;
-	camera.updateProjectionMatrix();
+	z *= r;
 
-	// Update renderer
-	renderer.setSize(sizes.width, sizes.height);
-	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-});
+	return [x, y, z];
+}
 
-// Controls
-var controls;
-controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-// controls.autoRotate = true;
+function setAge() {
+	let age, life;
 
-// Set the target for the controls
-controls.target.set(0, 0, 0); // Target point of the camera
+	age = 0;
+	life = 50 + rand(100);
 
-// Adjust the polar angle to tilt the camera downwards
-// The default polar angle is Math.PI / 2 (90 degrees), you can decrease it to look downwards
-controls.maxPolarAngle = 0; // Adjust this value to tilt the camera downwards
-controls.minPolarAngle = Math.PI / 2.5; // You can set this to 0 to avoid the camera flipping over
+	return [age, life];
+}
 
-/**
- * Animate
- */
+function setColor() {
+	let r, g, b;
 
-const clock = new THREE.Clock();
+	r = fadeIn(60 + rand(100), 360);
+	g = fadeIn(80 + rand(60), 360);
+	b = fadeIn(180 + rand(60), 360);
 
-const tick = () => {
+	return [r, g, b];
+}
+
+function createPoints() {
+	const uniforms = {
+		u_time: {
+			type: 'f',
+			value: 0.
+		},
+		u_texture: {
+			type: 'sampler2D',
+			value: new THREE.TextureLoader().load('https://s3-us-west-2.amazonaws.com/s.cdpn.io/544318/particle-texture-2.png')
+		}
+	};
+
+	pointsMat = new THREE.ShaderMaterial({
+		vertexShader: document.getElementById('cnoise').textContent +
+			document.getElementById('noise-util').textContent +
+			document.getElementById('points-vert').textContent,
+		fragmentShader: document.getElementById('points-frag').textContent,
+		blending: THREE.AdditiveBlending,
+		depthTest: true,
+		depthWrite: false,
+		transparent: true,
+		uniforms });
+
+	pointsGeom = new THREE.BufferGeometry();
+
+	pointsGeom.setAttribute(
+		'position',
+		new THREE.BufferAttribute(positions.values, positions.spread));
+
+	pointsGeom.setAttribute(
+		'color',
+		new THREE.BufferAttribute(colors.values, colors.spread));
+
+	pointsGeom.setAttribute(
+		'age',
+		new THREE.BufferAttribute(ages.values, ages.spread));
+
+	planetPoints = new THREE.Points(pointsGeom, pointsMat);
+
+	scene.add(planetPoints);
+}
+
+function createSphere() {
+	const uniforms = {
+		u_time: {
+			type: 'f',
+			value: 0.
+		}
+	};
+
+	sphereMat = new THREE.ShaderMaterial({
+		vertexShader: document.getElementById('cnoise').textContent +
+			document.getElementById('noise-util').textContent +
+			document.getElementById('sphere-vert').textContent,
+		fragmentShader: document.getElementById('sphere-frag').textContent,
+		uniforms
+	});
+
+	sphereGeom = new THREE.IcosahedronGeometry(radius, 6);
+
+	sphere = new THREE.Mesh(sphereGeom, sphereMat);
+
+	scene.add(sphere);
+}
+
+function updateParticles() {
+	let i, age, life;
+
+	for (i = 0; i < particleCount; i++) {
+		[age, life] = ages.get(i * ages.spread);
+
+		if (age > life) {
+			resetParticle(i);
+		} else {
+			ages.set([++age], i * ages.spread);
+		}
+	}
+
+	pointsGeom.attributes.position.needsUpdate = true;
+	pointsGeom.attributes.color.needsUpdate = true;
+	pointsGeom.attributes.age.needsUpdate = true;
+}
+
+/**--------------------------------------------------- ANIMATION ---------------------------------------------------**/
+
+function animate() {
 	const elapsedTime = clock.getElapsedTime();
 
+	/** GALAXY **/
+
 	// Update Points
-	points.rotation.y = elapsedTime * 0.1;
+	galaxyPoints.rotation.y = elapsedTime * 0.1;
+
+	/** PLANET **/
+
+	updateParticles();
+
+	pointsMat.uniforms.u_time.value = elapsedTime;
+	sphereMat.uniforms.u_time.value = elapsedTime;
+	planetPoints.rotation.y += .0025;
+	sphere.rotation.y += .0025;
+
+	/** COMMON **/
 
 	// Update controls
 	controls.update();
@@ -252,80 +369,6 @@ const tick = () => {
 	// Render
 	renderer.render(scene, camera);
 
-	// Call tick again on the next frame
-	window.requestAnimationFrame(tick);
-};
-
-tick();
-
-/** PLANET **/
-
-var
-	width = window.innerWidth,
-	height = window.innerHeight,
-	material;
-var colormap = new THREE.TextureLoader().load("https://raw.githubusercontent.com/pizza3/asset/master/color.png");
-var color = new THREE.TextureLoader().load("https://raw.githubusercontent.com/pizza3/asset/master/noise2.jpg");
-var noi = new THREE.TextureLoader().load("https://raw.githubusercontent.com/pizza3/asset/master/fluid.jpg");
-var uniforms = {
-	time: {
-		type: "f",
-		value: 10.0,
-	},
-	resolution: {
-		value: new THREE.Vector2(width, height),
-	},
-	color: {type: "f", value: color},
-	colormap: {type: "f", value: colormap},
-	noiseTex: {type: "f", value: noi},
-};
-
-function init() {
-	createScene();
-	createLights();
-	plane();
-	animate();
-}
-
-function createScene() {
-	renderer.antialias = true;
-	renderer.setPixelRatio(window.devicePixelRatio);
-	renderer.setSize(width, height);
-	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-	renderer.interpolateneMapping = THREE.ACESFilmicToneMapping;
-	//renderer.outputEncoding = THREE.sRGBEncoding;
-	document.getElementById("world").appendChild(renderer.domElement);
-}
-
-function createLights() {
-	const hemislight = new THREE.HemisphereLight();
-	hemislight.intensity = 0.2;
-	scene.add(hemislight);
-	const pointlight = new THREE.PointLight();
-	pointlight.distance = 1000;
-	pointlight.intensity = 0.7;
-	pointlight.position.set(30, 70, 20);
-	scene.add(pointlight);
-}
-
-function plane() {
-	new THREE.PlaneGeometry(0, 0, 32);
-	var spheregeometry = new THREE.SphereGeometry(1, 32, 32);
-	material = new THREE.ShaderMaterial({
-		uniforms: uniforms,
-		transparent: false,
-		vertexShader: document.getElementById("vertexShader").textContent,
-		fragmentShader: document.getElementById("fragmentShader").textContent,
-	});
-	var plane = new THREE.Mesh(spheregeometry, material);
-	plane.rotation.z = Math.PI / 1.5;
-	scene.add(plane);
-}
-
-function animate(delta) {
+	// Call animate again on the next frame
 	requestAnimationFrame(animate);
-	material.uniforms.time.value = delta * 0.6;
-	renderer.render(scene, camera);
 }
-
-init();

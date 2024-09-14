@@ -1,29 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<link rel="stylesheet" href="style.css">
-	<title></title>
+	<meta charset="UTF-8">
+	<title>CodePen - Wandering Star</title>
+	<link href="https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
+	<link rel="stylesheet" href="./style.css">
+
 </head>
-
 <body>
+<!-- partial:index.partial.html -->
+<canvas id="canvas"></canvas>
 
-<!--GALAXY-->
+<p class="info">drag / scroll mouse to rotate / zoom</p>
 
-<script type="importmap">
-	{
-		 "imports": {
-			 "three": "https://unpkg.com/three@0.149.0/build/three.module.js",
-			 "three/": "https://unpkg.com/three@0.149.0/"
-		 }
-	 }
-</script>
-<script type="module" src="script.js"></script>
-
-<div>
-	<canvas class="galaxy"></canvas>
-</div>
-
-<!--PLANET-->
+<script src="http://mrdoob.github.com/three.js/examples/js/postprocessing/EffectComposer.js"
+        cross-origin="anonymous"></script>
 
 <script type="x-shader/x-vertex" id="sphere-vert">
 	uniform float u_time;
@@ -68,7 +60,7 @@
 </script>
 
 <script type="x-shader/x-vertex" id="points-vert">
-	uniform float u_time;
+	uniform float u_time;	
 
 	attribute vec3 color;
 	attribute vec2 age;
@@ -82,10 +74,10 @@
 		vec3 velocity = (normalize(position) + noiseVel(position, u_time, .005, 4.)) * age.s;
 
 		vec4 newPosition = vec4(position, 1.) + vec4(velocity, 0.);
-
+	
 		v_color = color;
 		v_age = age;
-
+	
 		gl_PointSize = 100. * (100. / -mvPosition.z);
 		gl_Position = projectionMatrix * modelViewMatrix * newPosition;
 	}
@@ -101,7 +93,7 @@
 		float h = .5 * m;
 
 		return abs(mod((t + h), m) - h) / h;
-	}
+	}	
 
 	void main() {
 		float alpha = fadeInOut(v_age.s, v_age.t);
@@ -304,10 +296,12 @@
 		return 2.2 * n_xyzw;
 	}
 </script>
-
 <!-- partial -->
-<script src='dist/ParticlePlanet/partial.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/three.js/109/three.min.js'></script>
+<script
+		src='https://cdn.jsdelivr.net/gh/mrdoob/three.js@55ac3f233ed300da711f12d50e10f8e2f96a8f0b/examples/js/controls/OrbitControls.js'></script>
+<script src='https://codepen.io/seanfree/pen/LvrJWz.js'></script>
+<script src="./script.js"></script>
 
 </body>
-
 </html>
