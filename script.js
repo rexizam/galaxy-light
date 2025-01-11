@@ -79,7 +79,7 @@ function start() {
 
 // Texture
 const textureLoader= new THREE.TextureLoader();
-const texture = textureLoader.load('https://s3-us-west-2.amazonaws.com/s.cdpn.io/544318/particle-texture-2.png');
+const texture = textureLoader.load('https://s3-us-west-2.amazonaws.com/s.cdpn.io/544318/particle-texture-3.png');
 
 // Galaxy parameters
 const parameters = {};
@@ -267,7 +267,7 @@ function createPoints() {
 		},
 		u_texture: {
 			type: 'sampler2D',
-			value: new THREE.TextureLoader().load('https://s3-us-west-2.amazonaws.com/s.cdpn.io/544318/particle-texture-2.png')
+			value: new THREE.TextureLoader().load('https://s3-us-west-2.amazonaws.com/s.cdpn.io/544318/particle-texture-3.png')
 		}
 	};
 
