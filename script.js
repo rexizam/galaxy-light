@@ -79,7 +79,7 @@ function start() {
 
 // Texture
 const textureLoader= new THREE.TextureLoader();
-const texture = textureLoader.load('https://catlikecoding.com/unity/tutorials/custom-srp/particles/unlit-particles/particles-single.png');
+const texture = textureLoader.load('https://s3-us-west-2.amazonaws.com/s.cdpn.io/544318/particle-texture-2.png');
 
 // Galaxy parameters
 const parameters = {};
